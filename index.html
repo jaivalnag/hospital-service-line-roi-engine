@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Service Line ROI Tool</title>
+    <style>
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #f4f7f9; padding: 20px; color: #333; }
+        .dashboard { background: white; max-width: 950px; margin: 30px auto; padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid #005eb8; }
+        h2 { color: #005eb8; margin-top: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #eef0f2; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 8px; }
+        input { padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; transition: border-color 0.3s; }
+        input:focus { border-color: #005eb8; outline: none; }
+        .btn { background: #005eb8; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 1.1rem; width: 100%; margin-top: 10px; transition: 0.2s; }
+        .btn:hover { background: #003d7a; transform: translateY(-1px); }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th { background: #f1f4f8; color: #005eb8; padding: 15px; text-align: left; font-size: 0.9rem; border-bottom: 3px solid #dee2e6; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 1rem; font-family: 'Courier New', monospace; }
+        .pos-margin { color: #28a745; font-weight: 700; }
+        .neg-margin { color: #dc3545; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h2>🏥 Service Line Feasibility Engine</h2>
+    <p>Adjust variables to simulate hospital expansion ROI and Payer Mix impact.</p>
+    
+    <div class="controls">
+        <div class="input-group">
+            <label>Annual Patient Volume</label>
+            <input type="number" id="vol" value="1200">
+        </div>
+        <div class="input-group">
+            <label>Volume Growth %</label>
+            <input type="number" id="growth" value="4">
+        </div>
+        <div class="input-group">
+            <label>Avg. Reimbursement ($)</label>
+            <input type="number" id="rev" value="14580">
+        </div>
+        <div class="input-group">
+            <label>Variable Cost/Case ($)</label>
+            <input type="number" id="vcost" value="6500">
+        </div>
+        <div class="input-group" style="grid-column: span 2;">
+            <label>Fixed Annual Overhead ($)</label>
+            <input type="number" id="fcost" value="1200000">
+        </div>
+        <button class="btn" onclick="calculate()">RE-CALCULATE FINANCIALS</button>
+    </div>
+
+    <table id="resultTable">
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Patient Vol</th>
+                <th>Gross Revenue</th>
+                <th>EBITDA (Profit)</th>
+                <th>Operating Margin</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script>
+function calculate() {
+    let vol = parseFloat(document.getElementById('vol').value);
+    let growth = parseFloat(document.getElementById('growth').value) / 100;
+    let rev = parseFloat(document.getElementById('rev').value);
+    let vcost = parseFloat(document.getElementById('vcost').value);
+    let fcost = parseFloat(document.getElementById('fcost').value);
+    
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = "";
+
+    for (let i = 0; i < 5; i++) {
+        let year = 2026 + i;
+        let totalRev = vol * rev;
+        let totalExp = (vol * vcost) + fcost;
+        let ebitda = totalRev - totalExp;
+        let margin = (ebitda / totalRev) * 100;
+        let marginClass = margin >= 0 ? "pos-margin" : "neg-margin";
+
+        tableBody.innerHTML += `
+            <tr>
+                <td><b>${year}</b></td>
+                <td>${Math.round(vol).toLocaleString()}</td>
+                <td>$${Math.round(totalRev).toLocaleString()}</td>
+                <td>$${Math.round(ebitda).toLocaleString()}</td>
+                <td class="${marginClass}">${margin.toFixed(1)}%</td>
+            </tr>`;
+        vol *= (1 + growth);
+    }
+}
+window.onload = calculate;
+</script>
+
+</body>
+</html>
